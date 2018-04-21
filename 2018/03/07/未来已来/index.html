@@ -435,9 +435,22 @@
 
 
           
-  <div class="comments" id="comments">
+  <div class="comments" id="comments"></div>
     
-  </div>
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/valine@1.1.6/dist/Valine.min.js"></script>
+    <script>
+        new Valine({
+            av: AV,
+            el: '.comments',
+            notify: false, // 邮件提醒 v1.1.4新增，下一步中有具体的邮箱设置
+            verify: false,
+            app_id: 'szXBPyCcJlKsYQENADFRvJVD-gzGzoHsz',
+            app_key: 'YzVH1FhneODMpIPtYvfeJ1ds',
+            placeholder: '说点什么吧。。。'
+        });
+    </script>
+    
 
 
         </div>
