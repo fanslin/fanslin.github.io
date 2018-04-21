@@ -1,0 +1,705 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Spring,Spring Security," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="图形验证码登录是相对比较基础的功能，工作中也经常用到，之前都是用现成的，拿来即用，很少有时间自己去实现，最近从 GitHub 上 Clone 了一个开源的 BI 数据可视化系统，登录功能相对简陋，只有最基本的用户名和密码校验，于是想借此机会添加一个图形验证码校验的功能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Security 自定义图形验证码登录">
+<meta property="og:url" content="http://yoursite.com/2018/04/21/Spring-Security-自定义验证码登录/index.html">
+<meta property="og:site_name" content="Fanslin's Blog">
+<meta property="og:description" content="图形验证码登录是相对比较基础的功能，工作中也经常用到，之前都是用现成的，拿来即用，很少有时间自己去实现，最近从 GitHub 上 Clone 了一个开源的 BI 数据可视化系统，登录功能相对简陋，只有最基本的用户名和密码校验，于是想借此机会添加一个图形验证码校验的功能。">
+<meta property="og:image" content="http://yoursite.com/images/login.jpg">
+<meta property="og:updated_time" content="2018-04-21T13:52:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Security 自定义图形验证码登录">
+<meta name="twitter:description" content="图形验证码登录是相对比较基础的功能，工作中也经常用到，之前都是用现成的，拿来即用，很少有时间自己去实现，最近从 GitHub 上 Clone 了一个开源的 BI 数据可视化系统，登录功能相对简陋，只有最基本的用户名和密码校验，于是想借此机会添加一个图形验证码校验的功能。">
+<meta name="twitter:image" content="http://yoursite.com/images/login.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/04/21/Spring-Security-自定义验证码登录/"/>
+
+
+
+
+
+  <title> Spring Security 自定义图形验证码登录 | Fanslin's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Fanslin's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/21/Spring-Security-自定义验证码登录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Fanslin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Fanslin's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Spring Security 自定义图形验证码登录
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-21T00:00:00+08:00">
+                2018-04-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>图形验证码登录是相对比较基础的功能，工作中也经常用到，之前都是用现成的，拿来即用，很少有时间自己去实现，最近从 GitHub 上 Clone 了一个开源的 BI 数据可视化系统，登录功能相对简陋，只有最基本的用户名和密码校验，于是想借此机会添加一个图形验证码校验的功能。</p>
+</blockquote>
+<a id="more"></a>
+<hr>
+<p>开发环境 pom.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">spring.version</span>&gt;</span>4.3.7.RELEASE<span class="tag">&lt;/<span class="name">spring.version</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">spring-security.version</span>&gt;</span>4.1.0.RELEASE<span class="tag">&lt;/<span class="name">spring-security.version</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">jdk.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">jdk.version</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>主要配置 spring-security.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">security:http</span> <span class="attr">auto-config</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:intercept-url</span> <span class="attr">pattern</span>=<span class="string">"/login**"</span> <span class="attr">access</span>=<span class="string">"permitAll"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:intercept-url</span> <span class="attr">pattern</span>=<span class="string">"/validate**"</span> <span class="attr">access</span>=<span class="string">"permitAll"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:intercept-url</span> <span class="attr">pattern</span>=<span class="string">"/**"</span> <span class="attr">access</span>=<span class="string">"!anonymous"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:form-login</span> <span class="attr">login-page</span>=<span class="string">"/login.do"</span> <span class="attr">username-parameter</span>=<span class="string">"username"</span> <span class="attr">password-parameter</span>=<span class="string">"password"</span> <span class="attr">default-target-url</span>=<span class="string">"/starter.html"</span> <span class="attr">always-use-default-target</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:custom-filter</span> <span class="attr">ref</span>=<span class="string">"myAuthenticationFilter"</span> <span class="attr">before</span>=<span class="string">"FORM_LOGIN_FILTER"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:logout</span> <span class="attr">invalidate-session</span>=<span class="string">"true"</span> <span class="attr">delete-cookies</span>=<span class="string">"JSESSIONID"</span> <span class="attr">logout-url</span>=<span class="string">"/j_spring_cas_security_logout"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:remember-me</span> <span class="attr">remember-me-parameter</span>=<span class="string">"remember_me"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">security:csrf</span> <span class="attr">disabled</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">security:http</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>文件中配置了 URL 拦截，允许 /login 、/validate 请求，前者请求用于访问自定义的登录页面，后者用于生成图形验证码。最关键的是增加了一个过滤器，它需要继承 UsernamePasswordAuthenticationFilter 并重写其 attemptAuthentication 方法， 从而实现验证码校验的功能。注意这里定义了自定义过滤器的执行顺序 before=”FORM_LOGIN_FILTER”，表示在 UsernamePasswordAuthenticationFilter 这个过滤器之前执行。</p>
+<p>自定义过滤器配置<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"authenticationSuccessHandler"</span> <span class="attr">class</span>=<span class="string">"org.omiga.security.service.AuthenticationSuccessHandler"</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"authenticationFailureHandler"</span> <span class="attr">class</span>=<span class="string">"org.omiga.security.service.AuthenticationFailureHandler"</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"myAuthenticationFilter"</span> <span class="attr">class</span>=<span class="string">"org.omiga.security.service.MyAuthenticationFilter"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"authenticationManager"</span> <span class="attr">ref</span>=<span class="string">"authenticationManager"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"authenticationFailureHandler"</span> <span class="attr">ref</span>=<span class="string">"authenticationFailureHandler"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"authenticationSuccessHandler"</span> <span class="attr">ref</span>=<span class="string">"authenticationSuccessHandler"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>自定义过滤器实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">public class MyAuthenticationFilter extends UsernamePasswordAuthenticationFilter &#123;</div><div class="line"></div><div class="line">    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException &#123;</div><div class="line">        HttpSession session = request.getSession().toString();</div><div class="line">        String sessionValidateCode = getSessionValidateCode(session);</div><div class="line">        session.setAttribute(&quot;validateCode&quot;, null);</div><div class="line">        String validateCode = request.getParameter(&quot;validateCode&quot;).toString();</div><div class="line">        if (!sessionValidateCode.equalsIgnoreCase(validateCode)) &#123;</div><div class="line">            throw new AuthenticationServiceException(&quot;Validate Code Error！&quot;);</div><div class="line">        &#125;      </div><div class="line">        return super.attemptAuthentication(request, response);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    protected String getSessionValidateCode(HttpSession session) &#123;</div><div class="line">        Object obj = session.getAttribute(&quot;validateCode&quot;);</div><div class="line">        return null == obj ? &quot;&quot; : obj.toString();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>自定义过滤器配置还定义了验证成功、验证失败的处理器 authenticationSuccessHandler、authenticationSuccessHandler。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler &#123;</div><div class="line">    @Override</div><div class="line">    public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res, Authentication au) throws IOException, ServletException &#123;</div><div class="line">        super.onAuthenticationSuccess(req, res, au);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler &#123;</div><div class="line">    @Override</div><div class="line">    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException &#123;</div><div class="line">        super.onAuthenticationFailure(request, response, exception);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>登录控制器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">public class LoginController &#123;</div><div class="line"></div><div class="line">    @RequestMapping(value = &quot;/login&quot;)</div><div class="line">    public String loginPage() &#123;</div><div class="line">        return &quot;login&quot;;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @RequestMapping(value = &quot;/validate&quot;)</div><div class="line">    public void validate(HttpServletRequest request, HttpServletResponse response) throws Exception &#123;</div><div class="line">        char[] captcha = Captcha.random(); // 随机生成4个字符</div><div class="line">        request.getSession().setAttribute(&quot;validateCode&quot;, new String(captcha)); // 保存到session中</div><div class="line">        BufferedImage image = Captcha.draw(captcha); // 画成图片</div><div class="line">        response.setContentType(&quot;image/jpeg&quot;);// 设置响应类型,告诉浏览器输出的内容为图片</div><div class="line">        response.setHeader(&quot;Pragma&quot;, &quot;No-cache&quot;);// 设置响应头信息，告诉浏览器不要缓存此内容</div><div class="line">        response.setHeader(&quot;Cache-Control&quot;, &quot;no-cache&quot;);</div><div class="line">        response.setDateHeader(&quot;Expire&quot;, 0);</div><div class="line">        ImageIO.write(image, &quot;JPEG&quot;, response.getOutputStream());// 将内存中的图片通过流形式输出到客户端</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>登录页面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">&lt;form class=&quot;login_in&quot; id=&quot;loginForm&quot; action=&quot;#&quot; method=&quot;post&quot;&gt;</div><div class="line">        &lt;div class=&quot;int marT&quot;&gt;</div><div class="line">            &lt;img src=&quot;imgs/login/people.png&quot; class=&quot;icon&quot;&gt;</div><div class="line">            &lt;input type=&quot;text&quot; name=&quot;username&quot; id=&quot;username&quot; placeholder=&quot;用户名&quot; required/&gt;</div><div class="line">            &lt;img id=&quot;userImg&quot; src=&quot;imgs/login/yes.png&quot; class=&quot;yn&quot;&gt;</div><div class="line">        &lt;/div&gt;</div><div class="line">        &lt;div class=&quot;int&quot;&gt;</div><div class="line">            &lt;img src=&quot;imgs/login/pwd.png&quot; class=&quot;icon&quot;&gt;</div><div class="line">            &lt;input type=&quot;password&quot; name=&quot;password&quot; id=&quot;password&quot; placeholder=&quot;密码&quot; required/&gt;</div><div class="line">            &lt;img id=&quot;passwordImg&quot; src=&quot;imgs/login/no.png&quot; class=&quot;yn&quot;&gt;</div><div class="line">        &lt;/div&gt;</div><div class="line">        &lt;div class=&quot;int pwd_int&quot;&gt;</div><div class="line">            &lt;img src=&quot;imgs/login/code.png&quot; class=&quot;icon&quot;&gt;</div><div class="line">            &lt;input type=&quot;text&quot; name=&quot;validateCode&quot; id=&quot;validateCode&quot; placeholder=&quot;验证码&quot; required/&gt;</div><div class="line">            &lt;img src=&quot;validate.do&quot; onclick=&quot;javascript:src=&apos;validate.do?&apos; + Math.random()&quot; class=&quot;number_bg&quot;</div><div class="line">                 alt=&quot;看不清楚,换一张&quot;&gt;</div><div class="line">        &lt;/div&gt;</div><div class="line">        &lt;input type=&quot;submit&quot; value=&quot;登录&quot; class=&quot;login_btn&quot;/&gt;</div><div class="line">        &lt;span class=&quot;tips&quot; id=&quot;results&quot;&gt;&lt;/span&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
+<p>最终效果</p>
+<p><img src="/images/login.jpg" alt=""></p>
+<p><head><br>    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script><br>    <script src="//unpkg.com/valine/dist/Valine.min.js"></script><br></head></p>
+<body><br>    <div id="comment"></div><br>    <script><br>    new Valine({<br>    el: ‘#comment’ ,<br>    notify:false,<br>    verify:false,<br>    appId: ‘szXBPyCcJlKsYQENADFRvJVD-gzGzoHsz’,<br>    appKey: ‘YzVH1FhneODMpIPtYvfeJ1ds’,<br>    placeholder: ‘说点什么吧…’,<br>    path:window.location.pathname,<br>    avatar:’mm’<br>    });<br>    </script><br></body>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Spring/" rel="tag"># Spring</a>
+          
+            <a href="/tags/Spring-Security/" rel="tag"># Spring Security</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/07/未来已来/" rel="next" title="未来已来">
+                <i class="fa fa-chevron-left"></i> 未来已来
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Fanslin" />
+          <p class="site-author-name" itemprop="name">Fanslin</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fanslin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
