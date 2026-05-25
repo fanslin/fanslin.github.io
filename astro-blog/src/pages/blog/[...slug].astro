@@ -2,31 +2,80 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
+const tagHref = (tag: string) => `/tags/${encodeURIComponent(tag)}/`;
+
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const getPostGroup = (id: string) => {
+    const lastSlash = id.lastIndexOf('/');
+    return lastSlash === -1 ? '' : id.slice(0, lastSlash);
+  };
 
   return posts.map((post) => ({
     params: { slug: post.id },
-    props: { post }
+    props: {
+      post,
+      posts: posts
+        .filter((item) => getPostGroup(item.id) === getPostGroup(post.id))
+        .sort((a, b) => a.id.localeCompare(b.id, 'zh-CN'))
+    }
   }));
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
+const { post, posts } = Astro.props;
+const { Content, headings } = await render(post);
+const postIndex = posts.findIndex((item) => item.id === post.id);
+const previousPost = postIndex > 0 ? posts[postIndex - 1] : undefined;
+const nextPost = postIndex >= 0 && postIndex < posts.length - 1 ? posts[postIndex + 1] : undefined;
+const tableOfContents = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="article">
-    <header>
-      <p class="eyebrow">Blog</p>
-      <h1>{post.data.title}</h1>
-      <div class="meta">
-        <time datetime={post.data.pubDate.toISOString()}>
-          {post.data.pubDate.toLocaleDateString('zh-CN')}
-        </time>
-        {post.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
-      </div>
-    </header>
-    <Content />
-  </article>
+  <div class="article-shell">
+    <article class="article">
+      <header>
+        <p class="eyebrow">Blog</p>
+        <h1>{post.data.title}</h1>
+        <div class="meta">
+          <time datetime={post.data.pubDate.toISOString()}>
+            {post.data.pubDate.toLocaleDateString('zh-CN')}
+          </time>
+          {post.data.tags.map((tag) => <a class="tag" href={tagHref(tag)}>#{tag}</a>)}
+        </div>
+      </header>
+      <Content />
+      {(previousPost || nextPost) && (
+        <nav class="post-nav" aria-label="文章导航">
+          {previousPost ? (
+            <a href={`/blog/${previousPost.id}/`} rel="prev">
+              <span>上一篇</span>
+              {previousPost.data.title}
+            </a>
+          ) : (
+            <span></span>
+          )}
+          {nextPost ? (
+            <a href={`/blog/${nextPost.id}/`} rel="next">
+              <span>下一篇</span>
+              {nextPost.data.title}
+            </a>
+          ) : (
+            <span></span>
+          )}
+        </nav>
+      )}
+    </article>
+    {tableOfContents.length > 0 && (
+      <aside class="toc" aria-label="文章目录">
+        <p>本文目录</p>
+        <ol>
+          {tableOfContents.map((heading) => (
+            <li class={`depth-${heading.depth}`}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </aside>
+    )}
+  </div>
 </BaseLayout>

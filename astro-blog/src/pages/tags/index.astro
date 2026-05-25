@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const tagCounts = posts.reduce((counts, post) => {
+  post.data.tags.forEach((tag) => {
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  });
+  return counts;
+}, new Map<string, number>());
+
+const tags = [...tagCounts.entries()].sort(([tagA], [tagB]) => tagA.localeCompare(tagB, 'zh-CN'));
+const tagHref = (tag: string) => `/tags/${encodeURIComponent(tag)}/`;
+---
+
+<BaseLayout title="标签" description="按标签查看 Fanslin 的博客文章。">
+  <section class="article">
+    <header>
+      <p class="eyebrow">标签</p>
+      <h1>标签</h1>
+      <p class="lead">按主题聚合文章，快速找到同一类写作。</p>
+    </header>
+    <ul class="tag-list">
+      {tags.map(([tag, count]) => (
+        <li>
+          <a class="tag-pill" href={tagHref(tag)}>
+            <span>#{tag}</span>
+            <small>{count} 篇</small>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>

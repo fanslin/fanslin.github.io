@@ -4,6 +4,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const tagHref = (tag: string) => `/tags/${encodeURIComponent(tag)}/`;
 ---
 
 <BaseLayout title="文章" description="Fanslin 的博客文章列表。">
@@ -21,7 +23,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
               <time datetime={post.data.pubDate.toISOString()}>
                 {post.data.pubDate.toLocaleDateString('zh-CN')}
               </time>
-              {post.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
+              {post.data.tags.map((tag) => <a class="tag" href={tagHref(tag)}>#{tag}</a>)}
             </div>
             <h2><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
             <p>{post.data.description}</p>

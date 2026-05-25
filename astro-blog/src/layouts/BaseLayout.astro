@@ -12,6 +12,9 @@ const {
 } = Astro.props;
 
 const pageTitle = title === "Fanslin's Blog" ? title : `${title} | Fanslin's Blog`;
+const cloudflareWebAnalyticsToken = import.meta.env.PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN?.trim();
+const shouldLoadCloudflareWebAnalytics = import.meta.env.PROD && Boolean(cloudflareWebAnalyticsToken);
+const cloudflareWebAnalyticsConfig = JSON.stringify({ token: cloudflareWebAnalyticsToken });
 ---
 
 <!doctype html>
@@ -33,6 +36,7 @@ const pageTitle = title === "Fanslin's Blog" ? title : `${title} | Fanslin's Blo
       <nav aria-label="主导航">
         <a href="/">首页</a>
         <a href="/blog/">文章</a>
+        <a href="/tags/">标签</a>
         <a href="/rss.xml">RSS</a>
       </nav>
     </header>
@@ -43,5 +47,12 @@ const pageTitle = title === "Fanslin's Blog" ? title : `${title} | Fanslin's Blo
       <span>© {new Date().getFullYear()} Fanslin</span>
       <span>技术 · 系统设计 · 支付系统</span>
     </footer>
+    {shouldLoadCloudflareWebAnalytics && (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={cloudflareWebAnalyticsConfig}
+      ></script>
+    )}
   </body>
 </html>
