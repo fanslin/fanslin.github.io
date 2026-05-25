@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout title="Fanslin's Blog">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">个人技术博客</p>
+      <h1>写技术、系统设计、支付系统和长期思考。</h1>
+      <p class="lead">
+        这里是 Fanslin 的长期写作主站：记录工程经验、架构取舍、支付系统实践，以及一些和职业成长有关的慢思考。
+      </p>
+    </div>
+    <aside class="profile-panel" aria-label="作者简介">
+      <img src="/images/avatar.jpg" alt="Fanslin" />
+      <h2>Fanslin</h2>
+      <p>关注后端工程、系统设计、支付链路和长期主义的技术写作者。</p>
+    </aside>
+  </section>
+
+  <section class="section" aria-labelledby="recent-posts">
+    <h2 id="recent-posts">最新文章</h2>
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li class="post-card">
+          <article>
+            <div class="meta">
+              <time datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString('zh-CN')}
+              </time>
+              {post.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
+            </div>
+            <h3><a href={`/blog/${post.id}/`}>{post.data.title}</a></h3>
+            <p>{post.data.description}</p>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>

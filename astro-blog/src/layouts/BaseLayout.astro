@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'Fanslin 的个人技术博客，记录系统设计、支付系统、工程实践和长期思考。'
+} = Astro.props;
+
+const pageTitle = title === "Fanslin's Blog" ? title : `${title} | Fanslin's Blog`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <link rel="alternate" type="application/rss+xml" title="Fanslin's Blog RSS" href="/rss.xml" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="回到首页">
+        <img src="/images/avatar.jpg" alt="Fanslin" />
+        <span>Fanslin</span>
+      </a>
+      <nav aria-label="主导航">
+        <a href="/">首页</a>
+        <a href="/blog/">文章</a>
+        <a href="/rss.xml">RSS</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <span>© {new Date().getFullYear()} Fanslin</span>
+      <span>技术 · 系统设计 · 支付系统</span>
+    </footer>
+  </body>
+</html>

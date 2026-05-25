@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="文章" description="Fanslin 的博客文章列表。">
+  <section class="article">
+    <header>
+      <p class="eyebrow">文章列表</p>
+      <h1>文章</h1>
+      <p class="lead">按时间整理公开写作，主要记录技术实践、系统设计、支付系统和长期思考。</p>
+    </header>
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li class="post-card">
+          <article>
+            <div class="meta">
+              <time datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString('zh-CN')}
+              </time>
+              {post.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
+            </div>
+            <h2><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
+            <p>{post.data.description}</p>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
